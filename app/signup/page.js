@@ -8,7 +8,7 @@ import { Mail, Lock, UserPlus, Info, CheckCircle2, AlertTriangle, Eye, EyeOff } 
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signUp, isDemoMode } = useAuth();
+  const { signUp } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -97,24 +97,7 @@ export default function SignupPage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Get started with TaskFlow</p>
         </div>
 
-        {/* Demo Mode / Supabase Mode Alert Banner */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          {isDemoMode ? (
-            <div className="alert-banner" style={{ background: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.15)' }}>
-              <AlertTriangle className="alert-banner-icon" size={18} />
-              <div>
-                <strong>Demo Mode Active:</strong> Account will be saved in your browser's local storage.
-              </div>
-            </div>
-          ) : (
-            <div className="alert-banner" style={{ background: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.15)', color: '#d1fae5' }}>
-              <CheckCircle2 style={{ color: 'var(--success)' }} size={18} />
-              <div>
-                <strong>Supabase Database Connected:</strong> Signing up creates a secure database user account.
-              </div>
-            </div>
-          )}
-        </div>
+
 
         {/* Form Error / Success Banners */}
         {error && (

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { 
   LogOut, Plus, Search, Calendar, CheckSquare, Trash2, Edit2, AlertCircle, 
   Filter, CheckCircle, BarChart3, Square, ListTodo, RefreshCw, Layers 
@@ -15,7 +15,7 @@ const PRIORITIES = ['low', 'medium', 'high'];
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user, loading, logout, isDemoMode } = useAuth();
+  const { user, loading, logout } = useAuth();
   
   // Tasks state
   const [tasks, setTasks] = useState([]);
@@ -53,58 +53,13 @@ export default function Dashboard() {
     const fetchTasks = async () => {
       setTasksLoading(true);
       try {
-        if (isSupabaseConfigured && supabase) {
-          const { data, error } = await supabase
-            .from('tasks')
-            .select('*')
-            .order('created_at', { ascending: false });
-            
-          if (error) throw error;
-          setTasks(data || []);
-        } else {
-          // Demo Mode loading
-          const key = `taskflow_demo_tasks_${user.id}`;
-          const stored = localStorage.getItem(key);
-          if (stored) {
-            setTasks(JSON.parse(stored));
-          } else {
-            // Seed with sample tasks
-            const samples = [
-              {
-                id: 'sample-1',
-                title: 'Welcome to TaskFlow! 👋',
-                description: 'Try adding a new task, editing, or filtering them. Check off a task to fire completion confetti!',
-                category: 'general',
-                priority: 'low',
-                due_date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
-                completed: false,
-                created_at: new Date().toISOString(),
-              },
-              {
-                id: 'sample-2',
-                title: 'Setup Supabase Backend ⚡',
-                description: 'Copy your Supabase Project URL and Anon key into .env.local to enable real database sync!',
-                category: 'work',
-                priority: 'high',
-                due_date: new Date(Date.now() + 172800000).toISOString().split('T')[0], // 2 days later
-                completed: false,
-                created_at: new Date().toISOString(),
-              },
-              {
-                id: 'sample-3',
-                title: 'Drink 8 glasses of water daily 💧',
-                description: 'Stay hydrated throughout the day for premium brain performance.',
-                category: 'wellness',
-                priority: 'medium',
-                due_date: '',
-                completed: true,
-                created_at: new Date().toISOString(),
-              }
-            ];
-            localStorage.setItem(key, JSON.stringify(samples));
-            setTasks(samples);
-          }
-        }
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        setTasks(data || []);
       } catch (err) {
         console.error('Error fetching tasks:', err);
         setError('Failed to fetch tasks.');
@@ -170,50 +125,25 @@ export default function Dashboard() {
     };
 
     try {
-      if (isSupabaseConfigured && supabase) {
-        if (editingTask) {
-          // UPDATE
-          const { data, error: err } = await supabase
-            .from('tasks')
-            .update(taskData)
-            .eq('id', editingTask.id)
-            .select();
-            
-          if (err) throw err;
-          setTasks(prev => prev.map(t => t.id === editingTask.id ? data[0] : t));
-        } else {
-          // CREATE
-          const { data, error: err } = await supabase
-            .from('tasks')
-            .insert([{ ...taskData, completed: false, user_id: user.id }])
-            .select();
-            
-          if (err) throw err;
-          setTasks(prev => [data[0], ...prev]);
-        }
+      if (editingTask) {
+        // UPDATE
+        const { data, error: err } = await supabase
+          .from('tasks')
+          .update(taskData)
+          .eq('id', editingTask.id)
+          .select();
+          
+        if (err) throw err;
+        setTasks(prev => prev.map(t => t.id === editingTask.id ? data[0] : t));
       } else {
-        // Demo Mode CRUD
-        const key = `taskflow_demo_tasks_${user.id}`;
-        let currentTasks = [...tasks];
-        
-        if (editingTask) {
-          // UPDATE LOCAL
-          const updated = { ...editingTask, ...taskData };
-          currentTasks = currentTasks.map(t => t.id === editingTask.id ? updated : t);
-          setTasks(currentTasks);
-        } else {
-          // CREATE LOCAL
-          const created = {
-            id: 'task-' + Math.random().toString(36).substr(2, 9),
-            ...taskData,
-            completed: false,
-            created_at: new Date().toISOString(),
-            user_id: user.id
-          };
-          currentTasks = [created, ...currentTasks];
-          setTasks(currentTasks);
-        }
-        localStorage.setItem(key, JSON.stringify(currentTasks));
+        // CREATE
+        const { data, error: err } = await supabase
+          .from('tasks')
+          .insert([{ ...taskData, completed: false, user_id: user.id }])
+          .select();
+          
+        if (err) throw err;
+        setTasks(prev => [data[0], ...prev]);
       }
       setIsModalOpen(false);
     } catch (err) {
@@ -242,19 +172,12 @@ export default function Dashboard() {
     }
 
     try {
-      if (isSupabaseConfigured && supabase) {
-        const { error: err } = await supabase
-          .from('tasks')
-          .update({ completed: newStatus })
-          .eq('id', task.id);
-          
-        if (err) throw err;
-      } else {
-        // Demo Mode complete toggle
-        const key = `taskflow_demo_tasks_${user.id}`;
-        const updatedTasks = tasks.map(t => t.id === task.id ? { ...t, completed: newStatus } : t);
-        localStorage.setItem(key, JSON.stringify(updatedTasks));
-      }
+      const { error: err } = await supabase
+        .from('tasks')
+        .update({ completed: newStatus })
+        .eq('id', task.id);
+        
+      if (err) throw err;
     } catch (err) {
       console.error('Error updating task status:', err);
       // Revert state on error
@@ -270,19 +193,12 @@ export default function Dashboard() {
     setTasks(prev => prev.filter(t => t.id !== taskId));
 
     try {
-      if (isSupabaseConfigured && supabase) {
-        const { error: err } = await supabase
-          .from('tasks')
-          .delete()
-          .eq('id', taskId);
-          
-        if (err) throw err;
-      } else {
-        // Demo Mode delete
-        const key = `taskflow_demo_tasks_${user.id}`;
-        const updatedTasks = tasks.filter(t => t.id !== taskId);
-        localStorage.setItem(key, JSON.stringify(updatedTasks));
-      }
+      const { error: err } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId);
+        
+      if (err) throw err;
     } catch (err) {
       console.error('Error deleting task:', err);
       setError('Could not delete the task from server.');
@@ -353,19 +269,7 @@ export default function Dashboard() {
   return (
     <div className="app-container animate-fade-in" style={{ paddingBottom: '5rem' }}>
       
-      {/* Top Banner indicating if in Demo / Local storage mode */}
-      {isDemoMode && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div className="alert-banner" style={{ justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <AlertCircle className="alert-banner-icon" size={20} />
-              <div>
-                <strong>Demo Mode Active:</strong> Synced locally. Configure your <code>.env.local</code> file to hook up a real-time Supabase Database.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Header Bar */}
       <header className="glass-panel" style={{
@@ -399,7 +303,7 @@ export default function Dashboard() {
           <div style={{ textAlign: 'right', display: 'none', md: 'block' }}>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{user.email}</p>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-              Session: {isDemoMode ? 'Demo User' : 'Cloud DB Connected'}
+              Session: Cloud DB Connected
             </p>
           </div>
           

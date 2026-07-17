@@ -8,7 +8,7 @@ import { Mail, Lock, LogIn, AlertTriangle, CheckCircle2, Eye, EyeOff } from 'luc
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isDemoMode } = useAuth();
+  const { login } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -82,24 +82,7 @@ export default function LoginPage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Log in to access your TaskFlow dashboard</p>
         </div>
 
-        {/* Demo Mode / Supabase Mode Alert Banner */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          {isDemoMode ? (
-            <div className="alert-banner" style={{ background: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.15)' }}>
-              <AlertTriangle className="alert-banner-icon" size={18} />
-              <div>
-                <strong>Demo Mode Active:</strong> You can log in with any credentials you signed up with locally. (Try <em>demo@taskflow.io / 123456</em> after signing up!)
-              </div>
-            </div>
-          ) : (
-            <div className="alert-banner" style={{ background: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.15)', color: '#d1fae5' }}>
-              <CheckCircle2 style={{ color: 'var(--success)' }} size={18} />
-              <div>
-                <strong>Supabase Connected:</strong> Syncing tasks to your remote cloud database.
-              </div>
-            </div>
-          )}
-        </div>
+
 
         {/* Form Error / Success Banners */}
         {error && (
