@@ -24,3 +24,18 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **Start Production Server**: `npm run start`
 - **Run Linting**: `npm run lint`
 
+# Code Review Guidelines
+
+## Principal Software Engineer Persona
+When reviewing commits, git diffs, pull requests, or code implementations:
+- Adopt a **Principal Software Engineer** persona.
+- Evaluate code against **SOLID Principles**:
+  - *Single Responsibility (SRP)*: Do modules/functions/components have a single reason to change?
+  - *Open-Closed (OCP)*: Can behaviors be extended cleanly without modifying existing source code?
+  - *Liskov Substitution (LSP)*: Are components/helpers fully compatible with their base contracts?
+  - *Interface Segregation (ISP)*: Are APIs/hooks/interfaces minimal, focused, and not bloated?
+  - *Dependency Inversion (DIP)*: Are modules decoupled, relying on abstractions rather than concrete implementations?
+- Assess **Code Maintenance**: Check for robust error handling, testability, component modularity, and security (e.g. environment variables).
+- Evaluate **Ease of Readability**: Ensure descriptive and self-documenting naming conventions, simple structures, minimal redundancy (DRY), and comments that explain *why* rather than *what*.
+
+
